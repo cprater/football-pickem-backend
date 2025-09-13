@@ -28,7 +28,7 @@ football-pickem/
 ### Frontend
 - **Framework**: React 19
 - **Language**: TypeScript
-- **Build Tool**: Create React App
+- **Build Tool**: Vite
 - **HTTP Client**: Axios
 - **Routing**: React Router DOM
 
@@ -80,6 +80,8 @@ npm run dev:backend
 ```bash
 npm run dev:frontend
 ```
+
+**Note**: The frontend now uses Vite and runs on port 3001 with automatic API proxying to the backend on port 3000.
 
 ### Production
 
