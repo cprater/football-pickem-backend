@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import routes from './routes';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
+import { setupSwagger } from './middleware/swagger';
 import { syncDatabase } from './models';
 
 // Load environment variables
@@ -35,6 +36,11 @@ if (process.env.NODE_ENV === 'development') {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Swagger documentation (only in development)
+if (process.env.NODE_ENV === 'development') {
+  setupSwagger(app);
+}
+
 // Routes
 app.use('/', routes);
 
@@ -45,15 +51,23 @@ app.use(errorHandler);
 // Database synchronization and server startup
 const startServer = async () => {
   try {
-    // Sync database (only in development)
+    // Try to sync database (only in development)
     if (process.env.NODE_ENV === 'development') {
-      await syncDatabase(false); // Set to true to force recreate tables
+      try {
+        await syncDatabase(false); // Set to true to force recreate tables
+        console.log('✅ Database synchronized successfully');
+      } catch (dbError) {
+        console.warn('⚠️  Database connection failed - running without database sync');
+        console.warn('   Make sure PostgreSQL is running and DATABASE_URL is set correctly');
+        console.warn('   API documentation will still be available');
+      }
     }
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+      console.log(`📚 API docs: http://localhost:${PORT}/api-docs`);
     });
   } catch (error) {
     console.error('Failed to start server:', error);

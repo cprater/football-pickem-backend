@@ -1,24 +1,36 @@
-# Football Pickem League Backend
+# Football Pickem League - Monorepo
 
-A Node.js + Express backend API for managing football pickem leagues.
+A full-stack application for managing football pickem leagues, built with React frontend and Node.js/Express backend.
 
-## Features
+## Project Structure
 
-- User authentication and authorization
-- League creation and management
-- Game and team data management
-- Pick submission and tracking
-- Standings calculation
-- Real-time updates
+This is a monorepo containing both frontend and backend applications:
+
+```
+football-pickem/
+├── backend/          # Node.js/Express API server
+├── frontend/         # React TypeScript application
+├── package.json      # Root package.json with workspace configuration
+└── README.md         # This file
+```
 
 ## Tech Stack
 
+### Backend
 - **Runtime**: Node.js
 - **Framework**: Express.js
 - **Language**: TypeScript
 - **Database**: PostgreSQL with Sequelize ORM
 - **Authentication**: JWT tokens
 - **Validation**: express-validator
+- **Documentation**: Swagger/OpenAPI
+
+### Frontend
+- **Framework**: React 19
+- **Language**: TypeScript
+- **Build Tool**: Create React App
+- **HTTP Client**: Axios
+- **Routing**: React Router DOM
 
 ## Getting Started
 
@@ -31,77 +43,78 @@ A Node.js + Express backend API for managing football pickem leagues.
 ### Installation
 
 1. Clone the repository
-2. Install dependencies:
+2. Install all dependencies:
    ```bash
-   npm install
+   npm run install:all
    ```
 
 3. Set up environment variables:
    ```bash
-   cp env.example .env
+   cp backend/env.example backend/.env
    ```
-   Edit `.env` with your configuration values.
+   Edit `backend/.env` with your configuration values.
 
 4. Set up PostgreSQL database:
    ```sql
    CREATE DATABASE football_pickem;
    ```
 
-5. Start the development server:
+5. Set up the backend:
    ```bash
-   npm run dev
+   npm run setup
    ```
 
-The server will start on `http://localhost:3000`
+### Development
 
-## API Endpoints
+#### Run both frontend and backend in development mode:
+```bash
+npm run dev
+```
 
-### Authentication
-- `POST /api/v1/auth/register` - Register new user
-- `POST /api/v1/auth/login` - Login user
-- `GET /api/v1/auth/me` - Get current user profile
+#### Run only the backend:
+```bash
+npm run dev:backend
+```
 
-### Leagues
-- `GET /api/v1/leagues` - Get all public leagues
-- `POST /api/v1/leagues` - Create new league
-- `GET /api/v1/leagues/:id` - Get league details
-- `POST /api/v1/leagues/:id/join` - Join league
-- `POST /api/v1/leagues/:id/leave` - Leave league
+#### Run only the frontend:
+```bash
+npm run dev:frontend
+```
 
-### Games
-- `GET /api/v1/games` - Get games for current week
-- `GET /api/v1/games/week/:week` - Get games for specific week
-- `GET /api/v1/games/:id` - Get specific game
-- `GET /api/v1/games/teams/all` - Get all teams
+### Production
 
-### Picks
-- `GET /api/v1/picks` - Get user's picks
-- `POST /api/v1/picks` - Submit new pick
-- `PUT /api/v1/picks/:id` - Update existing pick
-- `DELETE /api/v1/picks/:id` - Delete pick
+#### Build both applications:
+```bash
+npm run build
+```
 
-## Database Schema
+#### Start the backend server:
+```bash
+npm start
+```
 
-The application uses the following main entities:
-- **Users**: User accounts and profiles
-- **Leagues**: Pickem leagues with settings
-- **Teams**: NFL teams
-- **Games**: NFL games with scores and spreads
-- **Picks**: User picks for games
+## Available Scripts
 
-## Development
+- `npm run dev` - Start both frontend and backend in development mode
+- `npm run dev:backend` - Start only the backend development server
+- `npm run dev:frontend` - Start only the frontend development server
+- `npm run build` - Build both applications for production
+- `npm run build:backend` - Build only the backend
+- `npm run build:frontend` - Build only the frontend
+- `npm start` - Start the backend production server
+- `npm run install:all` - Install dependencies for all workspaces
+- `npm run clean` - Clean all build artifacts and node_modules
+- `npm run setup` - Run the full setup process
 
-### Scripts
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - Build TypeScript to JavaScript
-- `npm start` - Start production server
+## API Documentation
 
-### Database Sync
-The application will automatically sync the database schema on startup in development mode.
+The backend API documentation is available at:
+- Development: `http://localhost:3000/api-docs`
+- Generated docs: `backend/API_DOCUMENTATION.md`
 
 ## Environment Variables
 
-See `env.example` for all required environment variables.
+See `backend/env.example` for all required environment variables.
 
 ## Contributing
 
