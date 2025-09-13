@@ -1,3 +1,5 @@
+![This codebase was _viiiibed_ out](https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExZDUxZG9mMWlzNndhcGV2Z2h5YTltZW9jd2oyb2ZmcnhxdGN0ZjU4bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/jrht6TXUa0SYlVZFnQ/giphy.gif)
+
 # Football Pickem League - Monorepo
 
 A full-stack application for managing football pickem leagues, built with React frontend and Node.js/Express backend.
