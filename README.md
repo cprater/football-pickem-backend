@@ -1,133 +1,183 @@
-![This codebase was _viiiibed_ out](https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExZDUxZG9mMWlzNndhcGV2Z2h5YTltZW9jd2oyb2ZmcnhxdGN0ZjU4bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/jrht6TXUa0SYlVZFnQ/giphy.gif)
+# Football Pickem Backend
 
-# Football Pickem League - Monorepo
+A full-stack football pickem application built with Node.js, Express, TypeScript, React, and PostgreSQL.
 
-A full-stack application for managing football pickem leagues, built with React frontend and Node.js/Express backend.
+## Features
 
-## Project Structure
-
-This is a monorepo containing both frontend and backend applications:
-
-```
-football-pickem/
-├── backend/          # Node.js/Express API server
-├── frontend/         # React TypeScript application
-├── package.json      # Root package.json with workspace configuration
-└── README.md         # This file
-```
+- User authentication and authorization
+- League creation and management
+- Game and team management
+- Pick submission and tracking
+- Real-time standings
+- Responsive web interface
 
 ## Tech Stack
 
 ### Backend
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **Language**: TypeScript
-- **Database**: PostgreSQL with Sequelize ORM
-- **Authentication**: JWT tokens
-- **Validation**: express-validator
-- **Documentation**: Swagger/OpenAPI
+- Node.js with Express
+- TypeScript
+- PostgreSQL with Sequelize ORM
+- JWT authentication
+- Swagger API documentation
+- Jest for testing
 
 ### Frontend
-- **Framework**: React 19
-- **Language**: TypeScript
-- **Build Tool**: Vite
-- **HTTP Client**: Axios
-- **Routing**: React Router DOM
+- React with TypeScript
+- React Router for navigation
+- Axios for API calls
+- Vitest for testing
+- CSS for styling
 
 ## Getting Started
 
 ### Prerequisites
-
-- Node.js (v16 or higher)
-- PostgreSQL (v12 or higher)
+- Node.js (v18 or higher)
+- PostgreSQL
 - npm or yarn
 
 ### Installation
 
-1. Clone the repository
-2. Install all dependencies:
-   ```bash
-   npm run install:all
-   ```
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd football-pickem-backend
+```
+
+2. Install dependencies:
+```bash
+npm run install:all
+```
 
 3. Set up environment variables:
-   ```bash
-   cp backend/env.example backend/.env
-   ```
-   Edit `backend/.env` with your configuration values.
+```bash
+# Backend
+cp backend/env.example backend/.env
+# Edit backend/.env with your database and JWT configuration
 
-4. Set up PostgreSQL database:
-   ```sql
-   CREATE DATABASE football_pickem;
-   ```
+# Frontend
+cp frontend/env.example frontend/.env
+# Edit frontend/.env with your API URL
+```
 
-5. Set up the backend:
-   ```bash
-   npm run setup
-   ```
+4. Set up the database:
+```bash
+cd backend
+npm run db:reset
+```
 
-### Development
-
-#### Run both frontend and backend in development mode:
+5. Start the development servers:
 ```bash
 npm run dev
 ```
 
-#### Run only the backend:
+This will start both the backend (port 3001) and frontend (port 5173) servers.
+
+## Testing
+
+### Run All Tests
 ```bash
-npm run dev:backend
+npm test
 ```
 
-#### Run only the frontend:
+### Backend Tests Only
 ```bash
-npm run dev:frontend
+npm run test:backend
 ```
 
-**Note**: The frontend now uses Vite and runs on port 3001 with automatic API proxying to the backend on port 3000.
-
-### Production
-
-#### Build both applications:
+### Frontend Tests Only
 ```bash
-npm run build
+npm run test:frontend
 ```
 
-#### Start the backend server:
+### Coverage Reports
 ```bash
-npm start
+npm run test:coverage
 ```
 
-## Available Scripts
+### Watch Mode
+```bash
+npm run test:watch
+```
 
-- `npm run dev` - Start both frontend and backend in development mode
-- `npm run dev:backend` - Start only the backend development server
-- `npm run dev:frontend` - Start only the frontend development server
-- `npm run build` - Build both applications for production
-- `npm run build:backend` - Build only the backend
-- `npm run build:frontend` - Build only the frontend
-- `npm start` - Start the backend production server
-- `npm run install:all` - Install dependencies for all workspaces
-- `npm run clean` - Clean all build artifacts and node_modules
-- `npm run setup` - Run the full setup process
+## Test Coverage
+
+The project includes comprehensive unit tests with full coverage for:
+
+### Backend
+- **Models**: User, League, Game, Team, Pick
+- **Routes**: Authentication, Games, Leagues, Picks
+- **Middleware**: Authentication, Validation, Error Handling
+- **Services**: Database operations, JWT handling
+
+### Frontend
+- **Components**: Header, all page components
+- **Pages**: Home, Login, Register, Dashboard, Leagues
+- **Services**: API client, authentication helpers
+- **Utilities**: Form handling, validation
 
 ## API Documentation
 
-The backend API documentation is available at:
-- Development: `http://localhost:3000/api-docs`
-- Generated docs: `backend/API_DOCUMENTATION.md`
+Once the backend is running, you can access the Swagger API documentation at:
+```
+http://localhost:3001/api-docs
+```
 
-## Environment Variables
+## Project Structure
 
-See `backend/env.example` for all required environment variables.
+```
+football-pickem-backend/
+├── backend/
+│   ├── src/
+│   │   ├── config/          # Database configuration
+│   │   ├── middleware/      # Express middleware
+│   │   ├── models/          # Sequelize models
+│   │   ├── routes/          # API routes
+│   │   ├── scripts/         # Utility scripts
+│   │   └── types/           # TypeScript type definitions
+│   ├── tests/               # Backend tests
+│   │   ├── models/          # Model tests
+│   │   ├── routes/          # Route tests
+│   │   └── middleware/      # Middleware tests
+│   └── dist/                # Compiled JavaScript
+├── frontend/
+│   ├── src/
+│   │   ├── components/      # React components
+│   │   ├── pages/           # Page components
+│   │   ├── services/        # API services
+│   │   ├── types/           # TypeScript types
+│   │   └── test/            # Test setup
+│   └── public/              # Static assets
+└── .github/workflows/       # CI/CD configuration
+```
+
+## Development
+
+### Backend Development
+```bash
+cd backend
+npm run dev
+```
+
+### Frontend Development
+```bash
+cd frontend
+npm run dev
+```
+
+### Building for Production
+```bash
+npm run build
+```
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+4. Add tests for new functionality
+5. Ensure all tests pass
+6. Submit a pull request
 
 ## License
 
-ISC
+This project is licensed under the ISC License.

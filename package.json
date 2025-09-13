@@ -1,38 +1,26 @@
 {
   "name": "football-pickem",
   "version": "1.0.0",
-  "description": "Football Pickem League - Full Stack Application",
-  "private": true,
-  "workspaces": [
-    "backend",
-    "frontend"
-  ],
+  "description": "Full-stack football pickem application",
   "scripts": {
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "dev:backend": "cd backend && npm run dev",
-    "dev:frontend": "cd frontend && npm run dev",
-    "build": "npm run build:backend && npm run build:frontend",
-    "build:backend": "cd backend && npm run build",
-    "build:frontend": "cd frontend && npm run build",
-    "start": "npm run start:backend",
-    "start:backend": "cd backend && npm start",
+    "test": "npm run test:be && npm run test:fe",
+    "test:be": "cd backend && npm test",
+    "test:fe": "cd frontend && npm run test:run",
+    "test:coverage": "npm run test:coverage:be && npm run test:coverage:fe",
+    "test:coverage:be": "cd backend && npm run test:coverage",
+    "test:coverage:fe": "cd frontend && npm run test:coverage",
+    "test:watch": "npm run test:watch:be & npm run test:watch:fe",
+    "test:watch:be": "cd backend && npm run test:watch",
+    "test:watch:fe": "cd frontend && npm test",
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
-    "clean": "rm -rf backend/dist backend/node_modules frontend/dist frontend/node_modules node_modules",
-    "setup": "npm run install:all && cd backend && npm run setup"
+    "build": "npm run build:be && npm run build:fe",
+    "build:be": "cd backend && npm run build",
+    "build:fe": "cd frontend && npm run build",
+    "dev": "npm run dev:be & npm run dev:fe",
+    "dev:be": "cd backend && npm run dev",
+    "dev:fe": "cd frontend && npm run dev"
   },
-  "keywords": [
-    "football",
-    "pickem",
-    "league",
-    "nfl",
-    "react",
-    "nodejs",
-    "express",
-    "typescript"
-  ],
+  "keywords": ["football", "pickem", "nfl", "fantasy", "sports"],
   "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "concurrently": "^8.2.2"
-  }
+  "license": "ISC"
 }
