@@ -4,7 +4,45 @@ import { asyncHandler, createError } from '../middleware/errorHandler';
 
 const router = Router();
 
-// Get games for current week
+/**
+ * @swagger
+ * /api/v1/games:
+ *   get:
+ *     summary: Get games for current or specified week/season
+ *     tags: [Games]
+ *     parameters:
+ *       - in: query
+ *         name: week
+ *         schema:
+ *           type: integer
+ *         description: Week number (optional)
+ *         example: 1
+ *       - in: query
+ *         name: seasonYear
+ *         schema:
+ *           type: integer
+ *         description: Season year (defaults to current year)
+ *         example: 2024
+ *     responses:
+ *       200:
+ *         description: Games retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 games:
+ *                   type: array
+ *                   items:
+ *                     allOf:
+ *                       - $ref: '#/components/schemas/Game'
+ *                       - type: object
+ *                         properties:
+ *                           homeTeam:
+ *                             $ref: '#/components/schemas/Team'
+ *                           awayTeam:
+ *                             $ref: '#/components/schemas/Team'
+ */
 router.get('/', asyncHandler(async (req: Request, res: Response) => {
   const { week, seasonYear = new Date().getFullYear() } = req.query;
 
@@ -33,7 +71,46 @@ router.get('/', asyncHandler(async (req: Request, res: Response) => {
   res.json({ games });
 }));
 
-// Get games for specific week
+/**
+ * @swagger
+ * /api/v1/games/week/{week}:
+ *   get:
+ *     summary: Get games for specific week
+ *     tags: [Games]
+ *     parameters:
+ *       - in: path
+ *         name: week
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Week number
+ *         example: 1
+ *       - in: query
+ *         name: seasonYear
+ *         schema:
+ *           type: integer
+ *         description: Season year (defaults to current year)
+ *         example: 2024
+ *     responses:
+ *       200:
+ *         description: Games retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 games:
+ *                   type: array
+ *                   items:
+ *                     allOf:
+ *                       - $ref: '#/components/schemas/Game'
+ *                       - type: object
+ *                         properties:
+ *                           homeTeam:
+ *                             $ref: '#/components/schemas/Team'
+ *                           awayTeam:
+ *                             $ref: '#/components/schemas/Team'
+ */
 router.get('/week/:week', asyncHandler(async (req: Request, res: Response) => {
   const { week } = req.params;
   const { seasonYear = new Date().getFullYear() } = req.query;
@@ -61,7 +138,44 @@ router.get('/week/:week', asyncHandler(async (req: Request, res: Response) => {
   res.json({ games });
 }));
 
-// Get specific game
+/**
+ * @swagger
+ * /api/v1/games/{id}:
+ *   get:
+ *     summary: Get specific game by ID
+ *     tags: [Games]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Game ID
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Game retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 game:
+ *                   allOf:
+ *                     - $ref: '#/components/schemas/Game'
+ *                     - type: object
+ *                       properties:
+ *                         homeTeam:
+ *                           $ref: '#/components/schemas/Team'
+ *                         awayTeam:
+ *                           $ref: '#/components/schemas/Team'
+ *       404:
+ *         description: Game not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
 
@@ -87,7 +201,25 @@ router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
   res.json({ game });
 }));
 
-// Get all teams
+/**
+ * @swagger
+ * /api/v1/games/teams/all:
+ *   get:
+ *     summary: Get all teams
+ *     tags: [Games]
+ *     responses:
+ *       200:
+ *         description: Teams retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 teams:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Team'
+ */
 router.get('/teams/all', asyncHandler(async (req: Request, res: Response) => {
   const teams = await Team.findAll({
     order: [['conference', 'ASC'], ['division', 'ASC'], ['name', 'ASC']],

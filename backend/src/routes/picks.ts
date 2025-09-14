@@ -7,7 +7,62 @@ import { AuthenticatedRequest } from '../types';
 
 const router = Router();
 
-// Get user's picks for current week
+/**
+ * @swagger
+ * /api/v1/picks:
+ *   get:
+ *     summary: Get user's picks
+ *     tags: [Picks]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: week
+ *         schema:
+ *           type: integer
+ *         description: Week number to filter picks
+ *         example: 1
+ *       - in: query
+ *         name: leagueId
+ *         schema:
+ *           type: integer
+ *         description: League ID to filter picks
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Picks retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 picks:
+ *                   type: array
+ *                   items:
+ *                     allOf:
+ *                       - $ref: '#/components/schemas/Pick'
+ *                       - type: object
+ *                         properties:
+ *                           game:
+ *                             allOf:
+ *                               - $ref: '#/components/schemas/Game'
+ *                               - type: object
+ *                                 properties:
+ *                                   homeTeam:
+ *                                     $ref: '#/components/schemas/Team'
+ *                                   awayTeam:
+ *                                     $ref: '#/components/schemas/Team'
+ *                           pickedTeam:
+ *                             $ref: '#/components/schemas/Team'
+ *                           league:
+ *                             $ref: '#/components/schemas/League'
+ *       401:
+ *         description: User not authenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get('/',
   authenticateToken,
   asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
@@ -57,7 +112,101 @@ router.get('/',
   })
 );
 
-// Submit new pick
+/**
+ * @swagger
+ * /api/v1/picks:
+ *   post:
+ *     summary: Submit new pick
+ *     tags: [Picks]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - gameId
+ *               - pickedTeamId
+ *               - pickType
+ *               - leagueId
+ *             properties:
+ *               gameId:
+ *                 type: integer
+ *                 description: ID of the game
+ *                 example: 1
+ *               pickedTeamId:
+ *                 type: integer
+ *                 description: ID of the team picked
+ *                 example: 1
+ *               pickType:
+ *                 type: string
+ *                 enum: [spread, over_under, straight]
+ *                 description: Type of pick
+ *                 example: "spread"
+ *               confidencePoints:
+ *                 type: integer
+ *                 description: Confidence points (1-16)
+ *                 example: 10
+ *               leagueId:
+ *                 type: integer
+ *                 description: ID of the league
+ *                 example: 1
+ *     responses:
+ *       201:
+ *         description: Pick submitted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Pick submitted successfully"
+ *                 pick:
+ *                   allOf:
+ *                     - $ref: '#/components/schemas/Pick'
+ *                     - type: object
+ *                       properties:
+ *                         game:
+ *                           allOf:
+ *                             - $ref: '#/components/schemas/Game'
+ *                             - type: object
+ *                               properties:
+ *                                 homeTeam:
+ *                                   $ref: '#/components/schemas/Team'
+ *                                 awayTeam:
+ *                                   $ref: '#/components/schemas/Team'
+ *                         pickedTeam:
+ *                           $ref: '#/components/schemas/Team'
+ *                         league:
+ *                           $ref: '#/components/schemas/League'
+ *       400:
+ *         description: Validation error or game has started
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: User is not a participant in the league
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Game or league not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       409:
+ *         description: Pick already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post('/',
   authenticateToken,
   validatePickSubmission,
@@ -157,7 +306,87 @@ router.post('/',
   })
 );
 
-// Update existing pick
+/**
+ * @swagger
+ * /api/v1/picks/{id}:
+ *   put:
+ *     summary: Update existing pick
+ *     tags: [Picks]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Pick ID
+ *         example: 1
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - pickedTeamId
+ *             properties:
+ *               pickedTeamId:
+ *                 type: integer
+ *                 description: ID of the team picked
+ *                 example: 2
+ *               confidencePoints:
+ *                 type: integer
+ *                 description: Confidence points (1-16)
+ *                 example: 12
+ *     responses:
+ *       200:
+ *         description: Pick updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Pick updated successfully"
+ *                 pick:
+ *                   allOf:
+ *                     - $ref: '#/components/schemas/Pick'
+ *                     - type: object
+ *                       properties:
+ *                         game:
+ *                           allOf:
+ *                             - $ref: '#/components/schemas/Game'
+ *                             - type: object
+ *                               properties:
+ *                                 homeTeam:
+ *                                   $ref: '#/components/schemas/Team'
+ *                                 awayTeam:
+ *                                   $ref: '#/components/schemas/Team'
+ *                         pickedTeam:
+ *                           $ref: '#/components/schemas/Team'
+ *                         league:
+ *                           $ref: '#/components/schemas/League'
+ *       400:
+ *         description: Validation error or game has started
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Unauthorized to update this pick
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Pick not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.put('/:id',
   authenticateToken,
   validatePickSubmission,
@@ -240,7 +469,52 @@ router.put('/:id',
   })
 );
 
-// Delete pick
+/**
+ * @swagger
+ * /api/v1/picks/{id}:
+ *   delete:
+ *     summary: Delete pick
+ *     tags: [Picks]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Pick ID
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Pick deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Pick deleted successfully"
+ *       400:
+ *         description: Game has already started
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Unauthorized to delete this pick
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Pick not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.delete('/:id',
   authenticateToken,
   asyncHandler(async (req: AuthenticatedRequest, res: Response) => {

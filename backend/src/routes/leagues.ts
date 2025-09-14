@@ -7,7 +7,51 @@ import { AuthenticatedRequest } from '../types';
 
 const router = Router();
 
-// Get all public leagues
+/**
+ * @swagger
+ * /api/v1/leagues:
+ *   get:
+ *     summary: Get all public leagues
+ *     tags: [Leagues]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Page number for pagination
+ *         example: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of leagues per page
+ *         example: 10
+ *       - in: query
+ *         name: seasonYear
+ *         schema:
+ *           type: integer
+ *         description: Filter by season year
+ *         example: 2024
+ *     responses:
+ *       200:
+ *         description: Leagues retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 leagues:
+ *                   type: array
+ *                   items:
+ *                     allOf:
+ *                       - $ref: '#/components/schemas/League'
+ *                       - type: object
+ *                         properties:
+ *                           commissioner:
+ *                             $ref: '#/components/schemas/User'
+ *                 pagination:
+ *                   $ref: '#/components/schemas/Pagination'
+ */
 router.get('/', asyncHandler(async (req: Request, res: Response) => {
   const { page = 1, limit = 10, seasonYear } = req.query;
   const offset = (Number(page) - 1) * Number(limit);
@@ -42,7 +86,42 @@ router.get('/', asyncHandler(async (req: Request, res: Response) => {
   });
 }));
 
-// Get league by ID
+/**
+ * @swagger
+ * /api/v1/leagues/{id}:
+ *   get:
+ *     summary: Get league by ID
+ *     tags: [Leagues]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: League ID
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: League retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 league:
+ *                   allOf:
+ *                     - $ref: '#/components/schemas/League'
+ *                     - type: object
+ *                       properties:
+ *                         commissioner:
+ *                           $ref: '#/components/schemas/User'
+ *       404:
+ *         description: League not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
 
@@ -63,7 +142,80 @@ router.get('/:id', asyncHandler(async (req: Request, res: Response) => {
   res.json({ league });
 }));
 
-// Create new league
+/**
+ * @swagger
+ * /api/v1/leagues:
+ *   post:
+ *     summary: Create new league
+ *     tags: [Leagues]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - seasonYear
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: League name
+ *                 example: "My Fantasy League"
+ *               description:
+ *                 type: string
+ *                 description: League description
+ *                 example: "A competitive fantasy football league"
+ *               maxParticipants:
+ *                 type: integer
+ *                 description: Maximum number of participants
+ *                 example: 20
+ *               entryFee:
+ *                 type: number
+ *                 description: Entry fee for the league
+ *                 example: 25.00
+ *               scoringType:
+ *                 type: string
+ *                 enum: [confidence, straight, survivor]
+ *                 description: Type of scoring system
+ *                 example: "confidence"
+ *               seasonYear:
+ *                 type: integer
+ *                 description: Season year
+ *                 example: 2024
+ *     responses:
+ *       201:
+ *         description: League created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "League created successfully"
+ *                 league:
+ *                   allOf:
+ *                     - $ref: '#/components/schemas/League'
+ *                     - type: object
+ *                       properties:
+ *                         commissioner:
+ *                           $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: User not authenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post('/',
   authenticateToken,
   validateLeagueCreation,
@@ -108,7 +260,54 @@ router.post('/',
   })
 );
 
-// Join league
+/**
+ * @swagger
+ * /api/v1/leagues/{id}/join:
+ *   post:
+ *     summary: Join a league
+ *     tags: [Leagues]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: League ID
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Successfully joined league
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Successfully joined league"
+ *                 league:
+ *                   $ref: '#/components/schemas/League'
+ *       400:
+ *         description: League is not active or full
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: League not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       409:
+ *         description: User is already a participant
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post('/:id/join',
   authenticateToken,
   asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
@@ -146,7 +345,46 @@ router.post('/:id/join',
   })
 );
 
-// Leave league
+/**
+ * @swagger
+ * /api/v1/leagues/{id}/leave:
+ *   post:
+ *     summary: Leave a league
+ *     tags: [Leagues]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: League ID
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Successfully left league
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Successfully left league"
+ *       400:
+ *         description: Commissioner cannot leave or user is not a participant
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: League not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post('/:id/leave',
   authenticateToken,
   asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
@@ -177,7 +415,39 @@ router.post('/:id/leave',
   })
 );
 
-// Get league participants
+/**
+ * @swagger
+ * /api/v1/leagues/{id}/participants:
+ *   get:
+ *     summary: Get league participants
+ *     tags: [Leagues]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: League ID
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Participants retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 participants:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/User'
+ *       404:
+ *         description: League not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get('/:id/participants',
   asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -195,7 +465,50 @@ router.get('/:id/participants',
   })
 );
 
-// Get league standings
+/**
+ * @swagger
+ * /api/v1/leagues/{id}/standings:
+ *   get:
+ *     summary: Get league standings
+ *     tags: [Leagues]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: League ID
+ *         example: 1
+ *       - in: query
+ *         name: week
+ *         schema:
+ *           type: integer
+ *         description: Week number for weekly standings
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Standings retrieved successfully (placeholder implementation)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Standings endpoint - to be implemented"
+ *                 leagueId:
+ *                   type: string
+ *                   example: "1"
+ *                 week:
+ *                   type: string
+ *                   example: "season"
+ *       404:
+ *         description: League not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get('/:id/standings',
   asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params;
