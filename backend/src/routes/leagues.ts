@@ -221,7 +221,7 @@ router.post('/',
   validateLeagueCreation,
   handleValidationErrors,
   asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-    const { name, description, maxParticipants, entryFee, scoringType, seasonYear } = req.body;
+    const { name, description, maxParticipants, entryFee, scoringType, seasonYear, isPublic } = req.body;
 
     const league = await League.create({
       name,
@@ -231,6 +231,7 @@ router.post('/',
       entryFee: entryFee || 0,
       scoringType: scoringType || 'confidence',
       seasonYear,
+      isPublic: isPublic !== undefined ? isPublic : true,
       leagueSettings: {
         scoringType: scoringType || 'confidence',
         maxParticipants: maxParticipants || 20,

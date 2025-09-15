@@ -119,10 +119,62 @@ const generateGames = (teams, seasonYear = currentYear) => {
     const matchups = createWeeklyMatchups(teams);
     
     matchups.forEach((matchup, index) => {
-      const gameDate = new Date(seasonYear, 8, 1 + (week - 1) * 7); // Start September 1st
-      gameDate.setHours(13 + (index % 4) * 2); // Spread games throughout the day
+      // More realistic NFL scheduling
+      let gameDate;
+      if (week === 1) {
+        // Week 1 starts on a Thursday
+        gameDate = new Date(seasonYear, 8, 5); // September 5th
+        if (index === 0) {
+          // First game is Thursday night
+          gameDate.setHours(20, 20, 0, 0); // 8:20 PM
+        } else {
+          // Rest are Sunday
+          gameDate.setDate(gameDate.getDate() + 3); // Move to Sunday
+          gameDate.setHours(13 + (index % 4) * 2, 0, 0, 0); // 1PM, 3PM, 5PM, 7PM
+        }
+      } else {
+        // Regular weeks start on Thursday
+        gameDate = new Date(seasonYear, 8, 5 + (week - 1) * 7); // Thursday of each week
+        if (index === 0) {
+          // First game is Thursday night
+          gameDate.setHours(20, 20, 0, 0); // 8:20 PM
+        } else if (index === matchups.length - 1) {
+          // Last game is Monday night
+          gameDate.setDate(gameDate.getDate() + 4); // Move to Monday
+          gameDate.setHours(20, 15, 0, 0); // 8:15 PM
+        } else {
+          // Rest are Sunday
+          gameDate.setDate(gameDate.getDate() + 3); // Move to Sunday
+          gameDate.setHours(13 + (index % 4) * 2, 0, 0, 0); // 1PM, 3PM, 5PM, 7PM
+        }
+      }
       
-      const status = week < 3 ? 'scheduled' : (week === 3 ? 'in_progress' : 'final');
+      // More realistic game status distribution
+      let status, homeScore = null, awayScore = null;
+      
+      if (week <= 6) {
+        // Past weeks - all games completed
+        status = 'final';
+        homeScore = getRandomInt(0, 45);
+        awayScore = getRandomInt(0, 45);
+      } else if (week === 7) {
+        // Current week - mix of completed and in-progress
+        const rand = Math.random();
+        if (rand < 0.7) {
+          status = 'final';
+          homeScore = getRandomInt(0, 45);
+          awayScore = getRandomInt(0, 45);
+        } else if (rand < 0.9) {
+          status = 'in_progress';
+          homeScore = getRandomInt(0, 35);
+          awayScore = getRandomInt(0, 35);
+        } else {
+          status = 'scheduled';
+        }
+      } else {
+        // Future weeks - mostly scheduled
+        status = Math.random() < 0.1 ? 'scheduled' : 'scheduled';
+      }
       
       games.push({
         homeTeamId: matchup.homeTeam.id,
@@ -133,8 +185,8 @@ const generateGames = (teams, seasonYear = currentYear) => {
         spread: Math.round((Math.random() - 0.5) * 14 * 2) / 2, // -7 to +7 in 0.5 increments
         overUnder: Math.round((40 + Math.random() * 20) * 2) / 2, // 40-60 points
         status,
-        homeScore: status === 'final' ? getRandomInt(0, 45) : null,
-        awayScore: status === 'final' ? getRandomInt(0, 45) : null,
+        homeScore,
+        awayScore,
       });
     });
   }
@@ -147,26 +199,54 @@ const generatePicks = (users, leagues, games) => {
   const picks = [];
   const pickTypes = ['straight', 'spread', 'over_under'];
   
-  // Generate picks for completed games only
-  const completedGames = games.filter(game => game.status === 'final');
-  
   leagues.forEach(league => {
     users.forEach(user => {
-      // Skip some games randomly to make it more realistic
-      const gamesToPick = completedGames.filter(() => Math.random() > 0.2);
+      // Generate picks only for past weeks (weeks 1-6)
+      const pastWeeks = [1, 2];
       
-      gamesToPick.forEach(game => {
-        const pickType = getRandomElement(pickTypes);
-        const pickedTeamId = Math.random() > 0.5 ? game.homeTeamId : game.awayTeamId;
+      pastWeeks.forEach(week => {
+        const weekGames = games.filter(game => game.week === week);
+        const completedWeekGames = weekGames.filter(game => game.status === 'final');
         
-        picks.push({
-          userId: user.id,
-          leagueId: league.id,
-          gameId: game.id,
-          pickedTeamId,
-          pickType,
-          confidencePoints: pickType === 'straight' ? getRandomInt(1, 16) : null,
-          isCorrect: Math.random() > 0.4, // 60% correct rate for realism
+        // Pick 80-95% of completed games from past weeks
+        const gamesToPick = completedWeekGames.filter(() => Math.random() > 0.1);
+        
+        gamesToPick.forEach(game => {
+          const pickType = getRandomElement(pickTypes);
+          const pickedTeamId = Math.random() > 0.5 ? game.homeTeamId : game.awayTeamId;
+          
+          // Determine if pick is correct based on actual game results
+          let isCorrect = false;
+          if (pickType === 'straight') {
+            // Straight pick: correct if picked team won
+            isCorrect = pickedTeamId === game.homeTeamId ? 
+              game.homeScore > game.awayScore : 
+              game.awayScore > game.homeScore;
+          } else if (pickType === 'spread') {
+            // Spread pick: correct if picked team covered
+            const spread = game.spread;
+            const homeWithSpread = game.homeScore + spread;
+            isCorrect = pickedTeamId === game.homeTeamId ? 
+              homeWithSpread > game.awayScore : 
+              game.awayScore > homeWithSpread;
+          } else if (pickType === 'over_under') {
+            // Over/under pick: correct if total points hit the bet
+            const total = game.homeScore + game.awayScore;
+            const overUnder = game.overUnder;
+            // Assume user picked "over" 60% of the time
+            const pickedOver = Math.random() > 0.4;
+            isCorrect = pickedOver ? total > overUnder : total < overUnder;
+          }
+          
+          picks.push({
+            userId: user.id,
+            leagueId: league.id,
+            gameId: game.id,
+            pickedTeamId,
+            pickType,
+            confidencePoints: pickType === 'straight' ? getRandomInt(1, 16) : null,
+            isCorrect,
+          });
         });
       });
     });
@@ -302,7 +382,31 @@ async function seedWithFakeData() {
     console.log('🎯 Creating fake picks...');
     const picks = generatePicks(users, leagues, createdGames);
     await Pick.bulkCreate(picks);
-    console.log(`✅ Created ${picks.length} picks`);
+    
+    // Log pick statistics
+    const completedPicks = picks.filter(pick => pick.isCorrect !== null);
+    const correctPicks = completedPicks.filter(pick => pick.isCorrect === true);
+    const pickAccuracy = completedPicks.length > 0 ? (correctPicks.length / completedPicks.length * 100).toFixed(1) : 0;
+    
+    console.log(`✅ Created ${picks.length} picks (past weeks only)`);
+    console.log(`📊 Pick Statistics:`);
+    console.log(`   - Completed picks: ${completedPicks.length}`);
+    console.log(`   - Correct picks: ${correctPicks.length}`);
+    console.log(`   - Accuracy: ${pickAccuracy}%`);
+    
+    // Log picks by week
+    const picksByWeek = {};
+    picks.forEach(pick => {
+      const game = createdGames.find(g => g.id === pick.gameId);
+      if (game) {
+        picksByWeek[game.week] = (picksByWeek[game.week] || 0) + 1;
+      }
+    });
+    
+    console.log(`📅 Picks by week (past weeks only):`);
+    Object.keys(picksByWeek).sort((a, b) => parseInt(a) - parseInt(b)).forEach(week => {
+      console.log(`   - Week ${week}: ${picksByWeek[week]} picks`);
+    });
     
     // 6. Print summary
     console.log('\n📊 Database Seeding Summary:');
