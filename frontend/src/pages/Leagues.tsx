@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLeagues, useCreateLeague, useJoinLeague } from '../hooks';
 import './Leagues.css';
 
 const Leagues: React.FC = () => {
+  const navigate = useNavigate();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [createFormData, setCreateFormData] = useState({
     name: '',
@@ -93,7 +95,7 @@ const Leagues: React.FC = () => {
   };
 
   const handleCreateFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
+    const { name, value } = e.target;
     setCreateFormData({
       ...createFormData,
       [name]: name === 'maxParticipants' || name === 'entryFee' || name === 'seasonYear' 
@@ -328,6 +330,12 @@ const Leagues: React.FC = () => {
                     </div>
                   </div>
                   <div className="league-actions">
+                    <button 
+                      className="btn btn-primary"
+                      onClick={() => navigate(`/leagues/${league.id}`)}
+                    >
+                      View League
+                    </button>
                     <button 
                       className="btn btn-secondary"
                       onClick={() => handleJoinLeague(league.id)}

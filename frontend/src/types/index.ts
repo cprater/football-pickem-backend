@@ -73,11 +73,13 @@ export interface Pick {
   leagueId: number;
   pickType: 'spread' | 'over_under' | 'straight';
   confidencePoints?: number;
+  isCorrect?: boolean;
   createdAt: string;
   updatedAt: string;
   game?: Game;
   pickedTeam?: Team;
   league?: League;
+  user?: User;
 }
 
 // Auth types
@@ -136,6 +138,42 @@ export interface LeagueParticipantsResponse {
   participants: User[];
 }
 
+// League page specific types
+export interface LeaguePicksResponse {
+  picks: Pick[];
+}
+
+export interface LeagueStandingsResponse {
+  standings: LeagueStanding[];
+  week?: number;
+  leagueId: number;
+  scoringType: 'confidence' | 'straight' | 'survivor';
+}
+
+export interface LeagueStanding {
+  userId: number;
+  user: User;
+  totalPoints: number;
+  correctPicks: number;
+  totalPicks: number;
+  winPercentage: number;
+  rank: number;
+  weeklyPoints?: { [week: number]: number };
+}
+
+export interface LeagueAdminUpdateRequest {
+  name?: string;
+  description?: string;
+  maxParticipants?: number;
+  entryFee?: number;
+  scoringType?: 'confidence' | 'straight' | 'survivor';
+  isPublic?: boolean;
+}
+
+export interface LeagueAdminRemoveParticipantRequest {
+  userId: number;
+}
+
 // Game API responses
 export interface GamesResponse {
   games: Game[];
@@ -170,6 +208,7 @@ export const queryKeys = {
     detail: (id: number) => ['leagues', 'detail', id] as const,
     participants: (id: number) => ['leagues', 'participants', id] as const,
     standings: (id: number, week?: number) => ['leagues', 'standings', id, week] as const,
+    picks: (id: number, week?: number) => ['leagues', 'picks', id, week] as const,
   },
   games: {
     all: ['games'] as const,

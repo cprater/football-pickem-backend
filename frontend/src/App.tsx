@@ -11,6 +11,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Leagues from './pages/Leagues';
+import LeagueDetail from './pages/LeagueDetail';
 import Dashboard from './pages/Dashboard';
 import QueryErrorBoundary from './components/QueryErrorBoundary';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -33,6 +34,11 @@ function App() {
               <Route path="/leagues" element={
                 <ProtectedRoute>
                   <Leagues />
+                </ProtectedRoute>
+              } />
+              <Route path="/leagues/:id" element={
+                <ProtectedRoute>
+                  <LeagueDetail />
                 </ProtectedRoute>
               } />
               <Route path="/dashboard" element={<Dashboard />} />

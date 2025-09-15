@@ -3,7 +3,11 @@ import api from '../../services/api';
 import type { 
   LeaguesResponse, 
   LeagueResponse, 
-  LeagueParticipantsResponse
+  LeagueParticipantsResponse,
+  LeaguePicksResponse,
+  LeagueStandingsResponse,
+  LeagueAdminUpdateRequest,
+  LeagueAdminRemoveParticipantRequest
 } from '../../types';
 import { queryKeys } from '../../types';
 
@@ -51,9 +55,25 @@ const leaguesApi = {
     return response.data;
   },
 
-  getStandings: async (id: number, week?: number): Promise<any> => {
+  getStandings: async (id: number, week?: number): Promise<LeagueStandingsResponse> => {
     const params = week ? { week } : {};
     const response = await api.get(`/leagues/${id}/standings`, { params });
+    return response.data;
+  },
+
+  getLeaguePicks: async (id: number, week?: number): Promise<LeaguePicksResponse> => {
+    const params = week ? { week } : {};
+    const response = await api.get(`/leagues/${id}/picks`, { params });
+    return response.data;
+  },
+
+  updateLeagueSettings: async (id: number, data: LeagueAdminUpdateRequest): Promise<LeagueResponse> => {
+    const response = await api.put(`/leagues/${id}/admin/update-settings`, data);
+    return response.data;
+  },
+
+  removeParticipant: async (id: number, data: LeagueAdminRemoveParticipantRequest): Promise<{ message: string }> => {
+    const response = await api.post(`/leagues/${id}/admin/remove-participant`, data);
     return response.data;
   },
 };
@@ -229,5 +249,42 @@ export const useLeagueStandings = (id: number, week?: number) => {
     queryFn: () => leaguesApi.getStandings(id, week),
     enabled: !!id,
     staleTime: 1 * 60 * 1000, // 1 minute (standings change frequently)
+  });
+};
+
+export const useLeaguePicks = (id: number, week?: number) => {
+  return useQuery({
+    queryKey: queryKeys.leagues.picks(id, week),
+    queryFn: () => leaguesApi.getLeaguePicks(id, week),
+    enabled: !!id,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+};
+
+export const useUpdateLeagueSettings = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: LeagueAdminUpdateRequest }) => 
+      leaguesApi.updateLeagueSettings(id, data),
+    onSuccess: (_, variables) => {
+      // Invalidate and refetch league data
+      queryClient.invalidateQueries({ queryKey: queryKeys.leagues.detail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.leagues.all });
+    },
+  });
+};
+
+export const useRemoveParticipant = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: LeagueAdminRemoveParticipantRequest }) => 
+      leaguesApi.removeParticipant(id, data),
+    onSuccess: (_, variables) => {
+      // Invalidate and refetch league participants
+      queryClient.invalidateQueries({ queryKey: queryKeys.leagues.participants(variables.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.leagues.detail(variables.id) });
+    },
   });
 };
