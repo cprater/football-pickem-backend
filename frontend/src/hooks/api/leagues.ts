@@ -30,6 +30,7 @@ const leaguesApi = {
     entryFee?: number;
     scoringType?: 'confidence' | 'straight' | 'survivor';
     seasonYear: number;
+    isPublic?: boolean;
   }): Promise<LeagueResponse> => {
     const response = await api.post('/leagues', leagueData);
     return response.data;

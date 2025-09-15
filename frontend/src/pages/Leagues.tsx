@@ -10,8 +10,11 @@ const Leagues: React.FC = () => {
     maxParticipants: 20,
     entryFee: 0,
     scoringType: 'confidence' as const,
-    seasonYear: new Date().getFullYear()
+    seasonYear: new Date().getFullYear(),
+    isPublic: true
   });
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const { data: leaguesData, isLoading: leaguesLoading, error: leaguesError } = useLeagues({
     page: 1,
@@ -24,8 +27,28 @@ const Leagues: React.FC = () => {
 
   const handleCreateLeague = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage('');
+    setSuccessMessage('');
+    
+    // Basic validation
+    if (!createFormData.name.trim()) {
+      setErrorMessage('League name is required');
+      return;
+    }
+    
+    if (createFormData.maxParticipants < 2 || createFormData.maxParticipants > 100) {
+      setErrorMessage('Max participants must be between 2 and 100');
+      return;
+    }
+    
+    if (createFormData.entryFee < 0) {
+      setErrorMessage('Entry fee cannot be negative');
+      return;
+    }
+    
     try {
-      await createLeagueMutation.mutateAsync(createFormData);
+      const result = await createLeagueMutation.mutateAsync(createFormData);
+      setSuccessMessage(`League "${result.league.name}" created successfully!`);
       setShowCreateForm(false);
       setCreateFormData({
         name: '',
@@ -33,35 +56,59 @@ const Leagues: React.FC = () => {
         maxParticipants: 20,
         entryFee: 0,
         scoringType: 'confidence',
-        seasonYear: new Date().getFullYear()
+        seasonYear: new Date().getFullYear(),
+        isPublic: true
       });
-      // Success message could be shown here
+      
+      // Clear success message after 5 seconds
+      setTimeout(() => setSuccessMessage(''), 5000);
     } catch (error: any) {
       console.error('Failed to create league:', error);
-      // Error message could be shown here
-      alert(error?.response?.data?.message || 'Failed to create league');
+      const errorMsg = error?.response?.data?.message || 'Failed to create league. Please try again.';
+      setErrorMessage(errorMsg);
+      
+      // Clear error message after 5 seconds
+      setTimeout(() => setErrorMessage(''), 5000);
     }
   };
 
   const handleJoinLeague = async (leagueId: number) => {
+    setErrorMessage('');
+    setSuccessMessage('');
+    
     try {
-      await joinLeagueMutation.mutateAsync(leagueId);
-      // Success message could be shown here
+      const result = await joinLeagueMutation.mutateAsync(leagueId);
+      setSuccessMessage(`Successfully joined "${result.league.name}"!`);
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error: any) {
       console.error('Failed to join league:', error);
-      // Error message could be shown here
-      alert(error?.response?.data?.message || 'Failed to join league');
+      const errorMsg = error?.response?.data?.message || 'Failed to join league. Please try again.';
+      setErrorMessage(errorMsg);
+      
+      // Clear error message after 5 seconds
+      setTimeout(() => setErrorMessage(''), 5000);
     }
   };
 
   const handleCreateFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
     setCreateFormData({
       ...createFormData,
       [name]: name === 'maxParticipants' || name === 'entryFee' || name === 'seasonYear' 
         ? Number(value) 
+        : name === 'isPublic'
+        ? (e.target as HTMLInputElement).checked
         : value
     });
+  };
+
+  const toggleCreateForm = () => {
+    setShowCreateForm(!showCreateForm);
+    // Clear messages when toggling form
+    setSuccessMessage('');
+    setErrorMessage('');
   };
 
   if (leaguesLoading) {
@@ -101,15 +148,34 @@ const Leagues: React.FC = () => {
           <p>Browse and join football pickem leagues.</p>
           <button 
             className="btn btn-primary"
-            onClick={() => setShowCreateForm(!showCreateForm)}
+            onClick={toggleCreateForm}
           >
             {showCreateForm ? 'Cancel' : 'Create New League'}
           </button>
         </div>
 
+        {/* Success Message */}
+        {successMessage && (
+          <div className="alert alert-success">
+            <span className="alert-icon">✅</span>
+            {successMessage}
+          </div>
+        )}
+
+        {/* Error Message */}
+        {errorMessage && (
+          <div className="alert alert-error">
+            <span className="alert-icon">❌</span>
+            {errorMessage}
+          </div>
+        )}
+
         {showCreateForm && (
           <div className="create-league-form">
             <h2>Create New League</h2>
+            <p className="form-description">
+              Set up your own football pickem league and invite friends to join the competition!
+            </p>
             <form onSubmit={handleCreateLeague}>
               <div className="form-group">
                 <label htmlFor="name">League Name</label>
@@ -145,18 +211,19 @@ const Leagues: React.FC = () => {
                     max="50"
                   />
                 </div>
-                <div className="form-group">
-                  <label htmlFor="entryFee">Entry Fee ($)</label>
-                  <input
-                    type="number"
-                    id="entryFee"
-                    name="entryFee"
-                    value={createFormData.entryFee}
-                    onChange={handleCreateFormChange}
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
+                  <div className="form-group">
+                    <label htmlFor="entryFee">Entry Fee ($)</label>
+                    <input
+                      type="number"
+                      id="entryFee"
+                      name="entryFee"
+                      value={createFormData.entryFee}
+                      onChange={handleCreateFormChange}
+                      min="0"
+                      step="0.01"
+                      placeholder="0.00"
+                    />
+                  </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
@@ -185,13 +252,44 @@ const Leagues: React.FC = () => {
                   />
                 </div>
               </div>
-              <button 
-                type="submit" 
-                className="btn btn-primary"
-                disabled={createLeagueMutation.isPending}
-              >
-                {createLeagueMutation.isPending ? 'Creating...' : 'Create League'}
-              </button>
+              <div className="form-group">
+                <div className="checkbox-group">
+                  <input
+                    type="checkbox"
+                    id="isPublic"
+                    name="isPublic"
+                    checked={createFormData.isPublic}
+                    onChange={handleCreateFormChange}
+                  />
+                  <label htmlFor="isPublic">
+                    Make this league public (visible to everyone)
+                  </label>
+                </div>
+              </div>
+              <div className="form-actions">
+                <button 
+                  type="submit" 
+                  className="btn btn-primary"
+                  disabled={createLeagueMutation.isPending}
+                >
+                  {createLeagueMutation.isPending ? (
+                    <>
+                      <span className="spinner"></span>
+                      Creating League...
+                    </>
+                  ) : (
+                    'Create League'
+                  )}
+                </button>
+                <button 
+                  type="button" 
+                  className="btn btn-secondary"
+                  onClick={toggleCreateForm}
+                  disabled={createLeagueMutation.isPending}
+                >
+                  Cancel
+                </button>
+              </div>
             </form>
           </div>
         )}
