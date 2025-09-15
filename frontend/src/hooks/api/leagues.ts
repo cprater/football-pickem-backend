@@ -22,6 +22,13 @@ const leaguesApi = {
     return response.data;
   },
 
+  getMyLeagues: async (params?: { 
+    seasonYear?: number 
+  }): Promise<LeaguesResponse> => {
+    const response = await api.get('/leagues/my-leagues', { params });
+    return response.data;
+  },
+
   getLeague: async (id: number): Promise<LeagueResponse> => {
     const response = await api.get(`/leagues/${id}`);
     return response.data;
@@ -87,6 +94,16 @@ export const useLeagues = (params?: {
   return useQuery({
     queryKey: queryKeys.leagues.list(params),
     queryFn: () => leaguesApi.getLeagues(params),
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+};
+
+export const useMyLeagues = (params?: { 
+  seasonYear?: number 
+}) => {
+  return useQuery({
+    queryKey: ['leagues', 'my-leagues', params],
+    queryFn: () => leaguesApi.getMyLeagues(params),
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 };

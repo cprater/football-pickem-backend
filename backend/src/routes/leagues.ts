@@ -88,6 +88,85 @@ router.get('/', asyncHandler(async (req: Request, res: Response) => {
 
 /**
  * @swagger
+ * /api/v1/leagues/my-leagues:
+ *   get:
+ *     summary: Get user's leagues (leagues they're participating in)
+ *     tags: [Leagues]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: seasonYear
+ *         schema:
+ *           type: integer
+ *         description: Filter by season year
+ *         example: 2024
+ *     responses:
+ *       200:
+ *         description: User's leagues retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 leagues:
+ *                   type: array
+ *                   items:
+ *                     allOf:
+ *                       - $ref: '#/components/schemas/League'
+ *                       - type: object
+ *                         properties:
+ *                           commissioner:
+ *                             $ref: '#/components/schemas/User'
+ *       401:
+ *         description: User not authenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get('/my-leagues',
+  authenticateToken,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    const { seasonYear } = req.query;
+    const userId = req.user!.id;
+
+    const whereClause: any = { isActive: true };
+    if (seasonYear) {
+      whereClause.seasonYear = seasonYear;
+    }
+
+    // Get leagues where the user is a participant
+    const user = await User.findByPk(userId, {
+      include: [
+        {
+          model: League,
+          as: 'leagues',
+          where: whereClause,
+          include: [
+            {
+              model: User,
+              as: 'commissioner',
+              attributes: ['id', 'username', 'firstName', 'lastName'],
+            },
+          ],
+          order: [['createdAt', 'DESC']],
+        },
+      ],
+    });
+
+    if (!user) {
+      throw createError('User not found', 404);
+    }
+
+    res.json({
+      leagues: (user as any).leagues || [],
+    });
+  })
+);
+
+/**
+ * @swagger
  * /api/v1/leagues/{id}:
  *   get:
  *     summary: Get league by ID

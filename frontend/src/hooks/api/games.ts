@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import api from '../../services/api';
+import { getCurrentWeek } from '../../utils/weekUtils';
 import type { 
   GamesResponse, 
   GameResponse, 
@@ -39,9 +40,15 @@ export const useGames = (params?: {
   week?: number; 
   seasonYear?: number 
 }) => {
+  // Default to current week if no week is specified
+  const queryParams = {
+    ...params,
+    week: params?.week || getCurrentWeek()
+  };
+  
   return useQuery({
-    queryKey: queryKeys.games.list(params),
-    queryFn: () => gamesApi.getGames(params),
+    queryKey: queryKeys.games.list(queryParams),
+    queryFn: () => gamesApi.getGames(queryParams),
     staleTime: 5 * 60 * 1000, // 5 minutes (games don't change often)
   });
 };

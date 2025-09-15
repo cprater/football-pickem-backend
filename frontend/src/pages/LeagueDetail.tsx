@@ -9,6 +9,7 @@ import {
   useRemoveParticipant
 } from '../hooks';
 import { useAuth } from '../hooks';
+import { getCurrentWeek, getWeekLabel } from '../utils/weekUtils';
 import type { LeagueAdminUpdateRequest } from '../types';
 import './LeagueDetail.css';
 
@@ -19,7 +20,7 @@ const LeagueDetail: React.FC = () => {
   const leagueId = id ? parseInt(id, 10) : 0;
 
   const [activeTab, setActiveTab] = useState<'overview' | 'participants' | 'picks' | 'standings'>('overview');
-  const [selectedWeek, setSelectedWeek] = useState<number | undefined>(undefined);
+  const [selectedWeek, setSelectedWeek] = useState<number | undefined>(getCurrentWeek());
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [adminFormData, setAdminFormData] = useState<LeagueAdminUpdateRequest>({});
 
@@ -260,7 +261,7 @@ const LeagueDetail: React.FC = () => {
                   >
                     <option value="">All Weeks</option>
                     {Array.from({ length: 18 }, (_, i) => i + 1).map(week => (
-                      <option key={week} value={week}>Week {week}</option>
+                      <option key={week} value={week}>{getWeekLabel(week)}</option>
                     ))}
                   </select>
                 </div>
@@ -317,7 +318,7 @@ const LeagueDetail: React.FC = () => {
                   >
                     <option value="">Season Total</option>
                     {Array.from({ length: 18 }, (_, i) => i + 1).map(week => (
-                      <option key={week} value={week}>Week {week}</option>
+                      <option key={week} value={week}>{getWeekLabel(week)}</option>
                     ))}
                   </select>
                 </div>
@@ -338,7 +339,7 @@ const LeagueDetail: React.FC = () => {
                     <>
                       <div className="standings-info">
                         <p className="standings-summary">
-                          Showing {selectedWeek ? `Week ${selectedWeek}` : 'Season Total'} standings
+                          Showing {selectedWeek ? getWeekLabel(selectedWeek) : 'Season Total'} standings
                           {standingsData?.scoringType && (
                             <span className="scoring-type">
                               • {standingsData.scoringType.charAt(0).toUpperCase() + standingsData.scoringType.slice(1)} Scoring
