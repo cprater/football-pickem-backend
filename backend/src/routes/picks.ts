@@ -238,7 +238,7 @@ router.post('/',
       throw createError('League not found', 404);
     }
 
-    const isParticipant = await league.hasParticipant(req.user!);
+    const isParticipant = await (league as any).countParticipants({ where: { id: req.user!.id } }) > 0;
     if (!isParticipant) {
       throw createError('User is not a participant in this league', 403);
     }

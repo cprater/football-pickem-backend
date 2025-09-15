@@ -1,6 +1,6 @@
 import { Router, Response, Request } from 'express';
 import { User } from '../models/User';
-import { generateToken } from '../middleware/auth';
+import { generateToken, authenticateToken } from '../middleware/auth';
 import { validateUserRegistration, validateUserLogin, handleValidationErrors } from '../middleware/validation';
 import { asyncHandler, createError } from '../middleware/errorHandler';
 import { AuthenticatedRequest } from '../types';
@@ -221,16 +221,14 @@ router.post('/login',
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/me', asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
-  // This route should be protected by auth middleware
-  // The user will be available in req.user
-  if (!req.user) {
-    throw createError('User not authenticated', 401);
-  }
-
-  res.json({
-    user: req.user.toJSON(),
-  });
-}));
+router.get('/me', 
+  authenticateToken,
+  asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
+    // The user will be available in req.user from authenticateToken middleware
+    res.json({
+      user: req.user!.toJSON(),
+    });
+  })
+);
 
 export default router;

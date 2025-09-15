@@ -241,7 +241,7 @@ router.post('/',
     });
 
     // Add commissioner as first participant
-    await league.addParticipant(req.user!);
+    await (league as any).addParticipant(req.user!);
 
     const leagueWithCommissioner = await League.findByPk(league.id, {
       include: [
@@ -324,19 +324,19 @@ router.post('/:id/join',
     }
 
     // Check if user is already a participant
-    const existingParticipant = await league.hasParticipant(req.user!);
+    const existingParticipant = await (league as any).countParticipants({ where: { id: req.user!.id } }) > 0;
     if (existingParticipant) {
       throw createError('User is already a participant in this league', 409);
     }
 
     // Check if league is full
-    const participantCount = await league.countParticipants();
+    const participantCount = await (league as any).countParticipants();
     if (participantCount >= league.maxParticipants) {
       throw createError('League is full', 400);
     }
 
     // Add user to league
-    await league.addParticipant(req.user!);
+    await (league as any).addParticipant(req.user!);
 
     res.json({
       message: 'Successfully joined league',
@@ -401,13 +401,13 @@ router.post('/:id/leave',
     }
 
     // Check if user is a participant
-    const isParticipant = await league.hasParticipant(req.user!);
+    const isParticipant = await (league as any).countParticipants({ where: { id: req.user!.id } }) > 0;
     if (!isParticipant) {
       throw createError('User is not a participant in this league', 400);
     }
 
     // Remove user from league
-    await league.removeParticipant(req.user!);
+    await (league as any).removeParticipant(req.user!);
 
     res.json({
       message: 'Successfully left league',
@@ -457,7 +457,7 @@ router.get('/:id/participants',
       throw createError('League not found', 404);
     }
 
-    const participants = await league.getParticipants({
+    const participants = await (league as any).getParticipants({
       attributes: ['id', 'username', 'firstName', 'lastName', 'avatarUrl'],
     });
 

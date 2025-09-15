@@ -15,7 +15,9 @@
     "setup": "node scripts/dev-setup.js",
     "migrate": "npm run build && node scripts/migrate.js",
     "seed": "npm run build && node scripts/seed.js",
-    "db:reset": "npm run migrate && npm run seed"
+    "seed:comprehensive": "npm run build && node scripts/seed-comprehensive.js",
+    "db:reset": "npm run migrate && npm run seed",
+    "db:reset:full": "npm run migrate && npm run seed:comprehensive"
   },
   "keywords": [],
   "author": "",

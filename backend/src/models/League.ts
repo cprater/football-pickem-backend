@@ -40,27 +40,12 @@ class League extends Model<LeagueAttributes, LeagueCreationAttributes> implement
   public commissioner?: User;
   public participants?: User[];
 
-  // Association methods
-  public async addParticipant(user: User): Promise<void> {
-    await (this as any).addParticipant(user);
-  }
-
-  public async removeParticipant(user: User): Promise<void> {
-    await (this as any).removeParticipant(user);
-  }
-
-  public async hasParticipant(user: User): Promise<boolean> {
-    const count = await (this as any).countParticipants({ where: { id: user.id } });
-    return count > 0;
-  }
-
-  public async countParticipants(): Promise<number> {
-    return await (this as any).countParticipants();
-  }
-
-  public async getParticipants(options?: any): Promise<User[]> {
-    return await (this as any).getParticipants(options);
-  }
+  // Association methods - removed to avoid recursion issues
+  // Use Sequelize's built-in association methods directly:
+  // league.addParticipant(user) -> league.addParticipant(user)
+  // league.removeParticipant(user) -> league.removeParticipant(user)
+  // league.countParticipants() -> league.countParticipants()
+  // league.getParticipants() -> league.getParticipants()
 }
 
 League.init(
