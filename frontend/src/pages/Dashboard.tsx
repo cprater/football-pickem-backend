@@ -11,6 +11,7 @@ import {
 } from '../hooks';
 import { getCurrentWeek, getWeekLabel } from '../utils/weekUtils';
 import ProtectedRoute from '../components/ProtectedRoute';
+import { Button, Loading, LeagueCard } from 'puppy-lib-components';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -45,12 +46,6 @@ const Dashboard: React.FC = () => {
   // Get user's leagues
   const userLeagues = leaguesData?.leagues || [];
 
-  const handleOpenPickModal = (league: any) => {
-    setModalLeague(league);
-    setSelectedLeague(league.id);
-    setSelectedWeek(getCurrentWeek()); // Default to current week
-    setShowPickModal(true);
-  };
 
   const handleClosePickModal = () => {
     setShowPickModal(false);
@@ -110,86 +105,39 @@ const Dashboard: React.FC = () => {
           <div className="leagues-section">
             <div className="leagues-header">
               <h2>Your Leagues</h2>
-              <button 
-                className="btn btn-primary"
+              <Button 
+                variant="primary"
                 onClick={() => navigate('/leagues')}
               >
                 Browse All Leagues
-              </button>
+              </Button>
             </div>
             
             {leaguesLoading ? (
-              <div className="loading">Loading your leagues...</div>
+              <Loading text="Loading your leagues..." />
             ) : userLeagues.length === 0 ? (
               <div className="no-leagues">
                 <div className="no-leagues-content">
                   <h3>No Leagues Yet</h3>
                   <p>You're not participating in any leagues this season.</p>
                   <p>Join a league to start making picks and competing with friends!</p>
-                  <button 
-                    className="btn btn-primary"
+                  <Button 
+                    variant="primary"
                     onClick={() => navigate('/leagues')}
                   >
                     Browse Leagues
-                  </button>
+                  </Button>
                 </div>
               </div>
             ) : (
               <div className="user-leagues">
                 {userLeagues.map(league => (
-                  <div key={league.id} className="league-card">
-                    <div className="league-header">
-                      <h3>{league.name}</h3>
-                      <div className="league-badges">
-                        {league.commissionerId === user?.id && (
-                          <span className="badge commissioner">Commissioner</span>
-                        )}
-                        <span className={`badge ${league.isPublic ? 'public' : 'private'}`}>
-                          {league.isPublic ? 'Public' : 'Private'}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    {league.description && (
-                      <p className="league-description">{league.description}</p>
-                    )}
-                    
-                    <div className="league-stats">
-                      <div className="stat">
-                        <span className="label">Participants:</span>
-                        <span className="value">{league.currentParticipants}/{league.maxParticipants}</span>
-                      </div>
-                      <div className="stat">
-                        <span className="label">Scoring:</span>
-                        <span className="value">{league.scoringType}</span>
-                      </div>
-                      <div className="stat">
-                        <span className="label">Season:</span>
-                        <span className="value">{league.seasonYear}</span>
-                      </div>
-                      {league.entryFee > 0 && (
-                        <div className="stat">
-                          <span className="label">Entry Fee:</span>
-                          <span className="value">${league.entryFee}</span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="league-actions">
-                      <button 
-                        className="btn btn-primary"
-                        onClick={() => navigate(`/leagues/${league.id}`)}
-                      >
-                        View League
-                      </button>
-                      <button 
-                        className="btn btn-secondary"
-                        onClick={() => handleOpenPickModal(league)}
-                      >
-                        Make Picks
-                      </button>
-                    </div>
-                  </div>
+                  <LeagueCard
+                    key={league.id}
+                    league={league}
+                    onClick={() => navigate(`/leagues/${league.id}`)}
+                    className="user-league-card"
+                  />
                 ))}
               </div>
             )}

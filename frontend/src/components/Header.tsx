@@ -1,5 +1,6 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth, useLogout } from '../hooks';
+import { Header as PuppyHeader } from 'puppy-lib-components';
 import './Header.css';
 
 const Header: React.FC = () => {
@@ -16,37 +17,26 @@ const Header: React.FC = () => {
     }
   };
 
+  const navItems = [
+    { label: 'Leagues', href: '/leagues' },
+    ...(isAuthenticated ? [{ label: 'Dashboard', href: '/dashboard' }] : [])
+  ];
+
   return (
-    <header className="header">
-      <div className="header-container">
-        <Link to="/" className="logo">
-          Football Pickem
-        </Link>
-        <nav className="nav">
-          <Link to="/leagues" className="nav-link">Leagues</Link>
-          {isAuthenticated && (
-            <Link to="/dashboard" className="nav-link">Dashboard</Link>
-          )}
-          {isAuthenticated ? (
-            <div className="user-menu">
-              <span className="user-name">Welcome, {user?.username}</span>
-              <button 
-                onClick={handleLogout}
-                disabled={logoutMutation.isPending}
-                className="btn btn-secondary"
-              >
-                {logoutMutation.isPending ? 'Logging out...' : 'Logout'}
-              </button>
-            </div>
-          ) : (
-            <>
-              <Link to="/login" className="nav-link">Login</Link>
-              <Link to="/register" className="nav-link">Register</Link>
-            </>
-          )}
-        </nav>
-      </div>
-    </header>
+    <PuppyHeader
+      title="Football Pickem"
+      navItems={navItems}
+      user={user ? {
+        id: user.id,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        avatarUrl: user.avatarUrl
+      } : undefined}
+      isAuthenticated={isAuthenticated}
+      onLogin={() => navigate('/login')}
+      onLogout={handleLogout}
+    />
   );
 };
 

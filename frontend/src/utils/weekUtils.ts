@@ -36,9 +36,6 @@ export const getCurrentWeek = (): number => {
  * Get current week for previous season (if we're in offseason)
  */
 const getCurrentWeekForPreviousSeason = (): number => {
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  
   // If we're in offseason, default to week 1 of current year
   // In a real app, you might want to show the last week of the previous season
   return 1;

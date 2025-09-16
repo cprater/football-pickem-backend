@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLeagues, useCreateLeague, useJoinLeague } from '../hooks';
+import { Button, Input, Alert, Loading, LeagueCard, Select, Textarea } from 'puppy-lib-components';
 import './Leagues.css';
 
 const Leagues: React.FC = () => {
@@ -117,7 +118,7 @@ const Leagues: React.FC = () => {
     return (
       <div className="leagues">
         <div className="container">
-          <div className="loading">Loading leagues...</div>
+          <Loading text="Loading leagues..." />
         </div>
       </div>
     );
@@ -148,28 +149,26 @@ const Leagues: React.FC = () => {
         <div className="leagues-header">
           <h1>Leagues</h1>
           <p>Browse and join football pickem leagues.</p>
-          <button 
-            className="btn btn-primary"
+          <Button 
+            variant="primary"
             onClick={toggleCreateForm}
           >
             {showCreateForm ? 'Cancel' : 'Create New League'}
-          </button>
+          </Button>
         </div>
 
         {/* Success Message */}
         {successMessage && (
-          <div className="alert alert-success">
-            <span className="alert-icon">✅</span>
+          <Alert variant="success" showIcon>
             {successMessage}
-          </div>
+          </Alert>
         )}
 
         {/* Error Message */}
         {errorMessage && (
-          <div className="alert alert-error">
-            <span className="alert-icon">❌</span>
+          <Alert variant="error" showIcon>
             {errorMessage}
-          </div>
+          </Alert>
         )}
 
         {showCreateForm && (
@@ -180,21 +179,21 @@ const Leagues: React.FC = () => {
             </p>
             <form onSubmit={handleCreateLeague}>
               <div className="form-group">
-                <label htmlFor="name">League Name</label>
-                <input
+                <Input
                   type="text"
                   id="name"
                   name="name"
+                  label="League Name"
                   value={createFormData.name}
                   onChange={handleCreateFormChange}
                   required
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="description">Description</label>
-                <textarea
+                <Textarea
                   id="description"
                   name="description"
+                  label="Description"
                   value={createFormData.description}
                   onChange={handleCreateFormChange}
                   rows={3}
@@ -202,55 +201,52 @@ const Leagues: React.FC = () => {
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="maxParticipants">Max Participants</label>
-                  <input
+                  <Input
                     type="number"
                     id="maxParticipants"
                     name="maxParticipants"
-                    value={createFormData.maxParticipants}
+                    label="Max Participants"
+                    value={createFormData.maxParticipants.toString()}
                     onChange={handleCreateFormChange}
-                    min="2"
-                    max="50"
+                    required
                   />
                 </div>
                   <div className="form-group">
-                    <label htmlFor="entryFee">Entry Fee ($)</label>
-                    <input
+                    <Input
                       type="number"
                       id="entryFee"
                       name="entryFee"
-                      value={createFormData.entryFee}
+                      label="Entry Fee ($)"
+                      value={createFormData.entryFee.toString()}
                       onChange={handleCreateFormChange}
-                      min="0"
-                      step="0.01"
                       placeholder="0.00"
                     />
                   </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="scoringType">Scoring Type</label>
-                  <select
+                  <Select
                     id="scoringType"
                     name="scoringType"
+                    label="Scoring Type"
                     value={createFormData.scoringType}
-                    onChange={handleCreateFormChange}
-                  >
-                    <option value="confidence">Confidence Points</option>
-                    <option value="straight">Straight Up</option>
-                    <option value="survivor">Survivor</option>
-                  </select>
+                    onChange={(value) => setCreateFormData({ ...createFormData, scoringType: value as any })}
+                    options={[
+                      { value: 'confidence', label: 'Confidence Points' },
+                      { value: 'straight', label: 'Straight Up' },
+                      { value: 'survivor', label: 'Survivor' }
+                    ]}
+                  />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="seasonYear">Season Year</label>
-                  <input
+                  <Input
                     type="number"
                     id="seasonYear"
                     name="seasonYear"
-                    value={createFormData.seasonYear}
+                    label="Season Year"
+                    value={createFormData.seasonYear.toString()}
                     onChange={handleCreateFormChange}
-                    min="2020"
-                    max="2030"
+                    required
                   />
                 </div>
               </div>
@@ -269,28 +265,22 @@ const Leagues: React.FC = () => {
                 </div>
               </div>
               <div className="form-actions">
-                <button 
+                <Button 
                   type="submit" 
-                  className="btn btn-primary"
+                  variant="primary"
                   disabled={createLeagueMutation.isPending}
+                  loading={createLeagueMutation.isPending}
                 >
-                  {createLeagueMutation.isPending ? (
-                    <>
-                      <span className="spinner"></span>
-                      Creating League...
-                    </>
-                  ) : (
-                    'Create League'
-                  )}
-                </button>
-                <button 
+                  {createLeagueMutation.isPending ? 'Creating League...' : 'Create League'}
+                </Button>
+                <Button 
                   type="button" 
-                  className="btn btn-secondary"
+                  variant="secondary"
                   onClick={toggleCreateForm}
                   disabled={createLeagueMutation.isPending}
                 >
                   Cancel
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -303,55 +293,14 @@ const Leagues: React.FC = () => {
           ) : (
             <div className="league-grid">
               {leaguesData?.leagues.map(league => (
-                <div key={league.id} className="league-card">
-                  <div className="league-header">
-                    <h3>{league.name}</h3>
-                    <span className="league-type">{league.scoringType}</span>
-                  </div>
-                  {league.description && (
-                    <p className="league-description">{league.description}</p>
-                  )}
-                  <div className="league-stats">
-                    <div className="stat">
-                      <span className="label">Participants:</span>
-                      <span className="value">{league.currentParticipants}/{league.maxParticipants}</span>
-                    </div>
-                    <div className="stat">
-                      <span className="label">Entry Fee:</span>
-                      <span className="value">${league.entryFee}</span>
-                    </div>
-                    <div className="stat">
-                      <span className="label">Season:</span>
-                      <span className="value">{league.seasonYear}</span>
-                    </div>
-                    <div className="stat">
-                      <span className="label">Commissioner:</span>
-                      <span className="value">{league.commissioner?.username}</span>
-                    </div>
-                  </div>
-                  <div className="league-actions">
-                    <button 
-                      className="btn btn-primary"
-                      onClick={() => navigate(`/leagues/${league.id}`)}
-                    >
-                      View League
-                    </button>
-                    <button 
-                      className="btn btn-secondary"
-                      onClick={() => handleJoinLeague(league.id)}
-                      disabled={joinLeagueMutation.isPending || league.currentParticipants >= league.maxParticipants}
-                    >
-                      {joinLeagueMutation.isPending ? 'Joining...' : 
-                       league.currentParticipants >= league.maxParticipants ? 'Full' : 'Join League'}
-                    </button>
-                    {league.isPublic && (
-                      <span className="league-badge public">Public</span>
-                    )}
-                    {!league.isPublic && (
-                      <span className="league-badge private">Private</span>
-                    )}
-                  </div>
-                </div>
+                <LeagueCard
+                  key={league.id}
+                  league={league}
+                  onClick={() => navigate(`/leagues/${league.id}`)}
+                  showJoinButton={true}
+                  onJoin={() => handleJoinLeague(league.id)}
+                  className="league-card"
+                />
               ))}
             </div>
           )}

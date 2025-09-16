@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useLogin } from '../hooks';
+import { Button, Input, Alert } from 'puppy-lib-components';
 import './Auth.css';
 
 const Login: React.FC = () => {
@@ -80,46 +81,44 @@ const Login: React.FC = () => {
       <div className="auth-form">
         <h2>Login</h2>
         {errors.general && (
-          <div className="error-message">{errors.general}</div>
+          <Alert variant="error" className="error-message">{errors.general}</Alert>
         )}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
+            <Input
               type="email"
               id="email"
               name="email"
+              label="Email"
               value={formData.email}
               onChange={handleChange}
-              className={errors.email ? 'error' : ''}
+              error={!!errors.email}
+              errorMessage={errors.email}
               required
             />
-            {errors.email && (
-              <span className="field-error">{errors.email}</span>
-            )}
           </div>
           <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
+            <Input
               type="password"
               id="password"
               name="password"
+              label="Password"
               value={formData.password}
               onChange={handleChange}
-              className={errors.password ? 'error' : ''}
+              error={!!errors.password}
+              errorMessage={errors.password}
               required
             />
-            {errors.password && (
-              <span className="field-error">{errors.password}</span>
-            )}
           </div>
-          <button 
+          <Button 
             type="submit" 
-            className="btn btn-primary"
+            variant="primary"
             disabled={loginMutation.isPending}
+            loading={loginMutation.isPending}
+            fullWidth
           >
             {loginMutation.isPending ? 'Logging in...' : 'Login'}
-          </button>
+          </Button>
         </form>
         <p className="auth-link">
           Don't have an account? <Link to="/register">Register here</Link>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useRegister } from '../hooks';
+import { Button, Input, Alert } from 'puppy-lib-components';
 import './Auth.css';
 
 const Register: React.FC = () => {
@@ -100,98 +101,92 @@ const Register: React.FC = () => {
       <div className="auth-form">
         <h2>Register</h2>
         {errors.general && (
-          <div className="error-message">{errors.general}</div>
+          <Alert variant="error" className="error-message">{errors.general}</Alert>
         )}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="username">Username</label>
-            <input
+            <Input
               type="text"
               id="username"
               name="username"
+              label="Username"
               value={formData.username}
               onChange={handleChange}
-              className={errors.username ? 'error' : ''}
+              error={!!errors.username}
+              errorMessage={errors.username}
               required
             />
-            {errors.username && (
-              <span className="field-error">{errors.username}</span>
-            )}
           </div>
           <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
+            <Input
               type="email"
               id="email"
               name="email"
+              label="Email"
               value={formData.email}
               onChange={handleChange}
-              className={errors.email ? 'error' : ''}
+              error={!!errors.email}
+              errorMessage={errors.email}
               required
             />
-            {errors.email && (
-              <span className="field-error">{errors.email}</span>
-            )}
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="firstName">First Name (Optional)</label>
-              <input
+              <Input
                 type="text"
                 id="firstName"
                 name="firstName"
+                label="First Name (Optional)"
                 value={formData.firstName}
                 onChange={handleChange}
               />
             </div>
             <div className="form-group">
-              <label htmlFor="lastName">Last Name (Optional)</label>
-              <input
+              <Input
                 type="text"
                 id="lastName"
                 name="lastName"
+                label="Last Name (Optional)"
                 value={formData.lastName}
                 onChange={handleChange}
               />
             </div>
           </div>
           <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
+            <Input
               type="password"
               id="password"
               name="password"
+              label="Password"
               value={formData.password}
               onChange={handleChange}
-              className={errors.password ? 'error' : ''}
+              error={!!errors.password}
+              errorMessage={errors.password}
               required
             />
-            {errors.password && (
-              <span className="field-error">{errors.password}</span>
-            )}
           </div>
           <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password</label>
-            <input
+            <Input
               type="password"
               id="confirmPassword"
               name="confirmPassword"
+              label="Confirm Password"
               value={formData.confirmPassword}
               onChange={handleChange}
-              className={errors.confirmPassword ? 'error' : ''}
+              error={!!errors.confirmPassword}
+              errorMessage={errors.confirmPassword}
               required
             />
-            {errors.confirmPassword && (
-              <span className="field-error">{errors.confirmPassword}</span>
-            )}
           </div>
-          <button 
+          <Button 
             type="submit" 
-            className="btn btn-primary"
+            variant="primary"
             disabled={registerMutation.isPending}
+            loading={registerMutation.isPending}
+            fullWidth
           >
             {registerMutation.isPending ? 'Creating Account...' : 'Register'}
-          </button>
+          </Button>
         </form>
         <p className="auth-link">
           Already have an account? <Link to="/login">Login here</Link>

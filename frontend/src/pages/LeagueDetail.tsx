@@ -11,6 +11,7 @@ import {
 import { useAuth } from '../hooks';
 import { getCurrentWeek, getWeekLabel } from '../utils/weekUtils';
 import type { LeagueAdminUpdateRequest } from '../types';
+import { Button, Loading, Select, Input, Textarea } from 'puppy-lib-components';
 import './LeagueDetail.css';
 
 const LeagueDetail: React.FC = () => {
@@ -68,7 +69,7 @@ const LeagueDetail: React.FC = () => {
     return (
       <div className="league-detail">
         <div className="container">
-          <div className="loading">Loading league...</div>
+          <Loading text="Loading league..." />
         </div>
       </div>
     );
@@ -81,9 +82,9 @@ const LeagueDetail: React.FC = () => {
           <div className="error">
             <h2>League Not Found</h2>
             <p>The league you're looking for doesn't exist or you don't have access to it.</p>
-            <button className="btn btn-primary" onClick={() => navigate('/leagues')}>
+            <Button variant="primary" onClick={() => navigate('/leagues')}>
               Back to Leagues
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -118,19 +119,19 @@ const LeagueDetail: React.FC = () => {
           </div>
           <div className="league-actions">
             {isCommissioner && (
-              <button 
-                className="btn btn-secondary"
+              <Button 
+                variant="secondary"
                 onClick={() => setShowAdminModal(true)}
               >
                 Admin Settings
-              </button>
+              </Button>
             )}
-            <button 
-              className="btn btn-primary"
+            <Button 
+              variant="primary"
               onClick={() => navigate('/leagues')}
             >
               Back to Leagues
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -209,7 +210,7 @@ const LeagueDetail: React.FC = () => {
               </div>
               
               {participantsLoading ? (
-                <div className="loading">Loading participants...</div>
+                <Loading text="Loading participants..." />
               ) : (
                 <div className="participants-grid">
                   {participants.map((participant) => (
@@ -233,13 +234,14 @@ const LeagueDetail: React.FC = () => {
                         )}
                       </div>
                       {isCommissioner && participant.id !== league.commissionerId && (
-                        <button 
-                          className="btn btn-danger btn-sm"
+                        <Button 
+                          variant="danger"
+                          size="sm"
                           onClick={() => handleRemoveParticipant(participant.id)}
                           disabled={removeParticipantMutation.isPending}
                         >
                           Remove
-                        </button>
+                        </Button>
                       )}
                     </div>
                   ))}
@@ -268,7 +270,7 @@ const LeagueDetail: React.FC = () => {
               </div>
 
               {picksLoading ? (
-                <div className="loading">Loading picks...</div>
+                <Loading text="Loading picks..." />
               ) : (
                 <div className="picks-list">
                   {picks.length === 0 ? (
@@ -325,7 +327,7 @@ const LeagueDetail: React.FC = () => {
               </div>
 
               {standingsLoading ? (
-                <div className="loading">Loading standings...</div>
+                <Loading text="Loading standings..." />
               ) : (
                 <div className="standings-table">
                   {standings.length === 0 ? (
@@ -405,18 +407,18 @@ const LeagueDetail: React.FC = () => {
               </div>
               <form onSubmit={handleAdminSubmit}>
                 <div className="form-group">
-                  <label htmlFor="name">League Name</label>
-                  <input
+                  <Input
                     type="text"
                     id="name"
+                    label="League Name"
                     value={adminFormData.name || league.name}
                     onChange={(e) => setAdminFormData({ ...adminFormData, name: e.target.value })}
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="description">Description</label>
-                  <textarea
+                  <Textarea
                     id="description"
+                    label="Description"
                     value={adminFormData.description || league.description || ''}
                     onChange={(e) => setAdminFormData({ ...adminFormData, description: e.target.value })}
                     rows={3}
@@ -424,40 +426,37 @@ const LeagueDetail: React.FC = () => {
                 </div>
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="maxParticipants">Max Participants</label>
-                    <input
+                    <Input
                       type="number"
                       id="maxParticipants"
-                      value={adminFormData.maxParticipants || league.maxParticipants}
+                      label="Max Participants"
+                      value={(adminFormData.maxParticipants || league.maxParticipants).toString()}
                       onChange={(e) => setAdminFormData({ ...adminFormData, maxParticipants: parseInt(e.target.value) })}
-                      min="2"
-                      max="100"
                     />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="entryFee">Entry Fee ($)</label>
-                    <input
+                    <Input
                       type="number"
                       id="entryFee"
-                      value={adminFormData.entryFee || league.entryFee}
+                      label="Entry Fee ($)"
+                      value={(adminFormData.entryFee || league.entryFee).toString()}
                       onChange={(e) => setAdminFormData({ ...adminFormData, entryFee: parseFloat(e.target.value) })}
-                      min="0"
-                      step="0.01"
                     />
                   </div>
                 </div>
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="scoringType">Scoring Type</label>
-                    <select
+                    <Select
                       id="scoringType"
+                      label="Scoring Type"
                       value={adminFormData.scoringType || league.scoringType}
-                      onChange={(e) => setAdminFormData({ ...adminFormData, scoringType: e.target.value as any })}
-                    >
-                      <option value="confidence">Confidence Points</option>
-                      <option value="straight">Straight Up</option>
-                      <option value="survivor">Survivor</option>
-                    </select>
+                      onChange={(value) => setAdminFormData({ ...adminFormData, scoringType: value as any })}
+                      options={[
+                        { value: 'confidence', label: 'Confidence Points' },
+                        { value: 'straight', label: 'Straight Up' },
+                        { value: 'survivor', label: 'Survivor' }
+                      ]}
+                    />
                   </div>
                   <div className="form-group">
                     <div className="checkbox-group">
@@ -472,20 +471,21 @@ const LeagueDetail: React.FC = () => {
                   </div>
                 </div>
                 <div className="modal-actions">
-                  <button 
+                  <Button 
                     type="submit" 
-                    className="btn btn-primary"
+                    variant="primary"
                     disabled={updateSettingsMutation.isPending}
+                    loading={updateSettingsMutation.isPending}
                   >
                     {updateSettingsMutation.isPending ? 'Updating...' : 'Update Settings'}
-                  </button>
-                  <button 
+                  </Button>
+                  <Button 
                     type="button" 
-                    className="btn btn-secondary"
+                    variant="secondary"
                     onClick={() => setShowAdminModal(false)}
                   >
                     Cancel
-                  </button>
+                  </Button>
                 </div>
               </form>
             </div>
