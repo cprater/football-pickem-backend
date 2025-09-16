@@ -418,7 +418,7 @@ async function seedWithFakeData() {
     
     console.log('\n🔑 Test User Credentials:');
     console.log('   Email: admin@footballpickem.com');
-    console.log('   Password: password123');
+    console.log('   Password: Password1');
     console.log('   (All users use the same password for testing)');
     
     console.log('\n🎉 Comprehensive seeding completed successfully!');

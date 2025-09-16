@@ -1,21 +1,9 @@
 #!/usr/bin/env node
 
-const { Sequelize } = require('sequelize');
-const path = require('path');
 require('dotenv').config();
 
-// Import models to ensure they're registered
-require('../dist/models');
-
-const sequelize = new Sequelize({
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432'),
-  database: process.env.DB_NAME || 'football_pickem',
-  username: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || '',
-  dialect: 'postgres',
-  logging: console.log,
-});
+// Import models to ensure they're registered and get the sequelize instance
+const { sequelize } = require('../dist/models');
 
 async function migrate() {
   try {
